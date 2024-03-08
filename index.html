@@ -17,49 +17,38 @@
     root.render(<App />)
 
     function App() {
-      return (<section className="game container">
-        <ul className="cards cards-theme-cars">
-          <li className="card card-show">
-            <img src="img/cats-1.jpg" width="204" height="144" alt="Котик"/>
-          </li>
-          <li className="card">
-            <img src="img/cats-2.jpg" width="204" height="144" alt="Котик"/>
-          </li>
-          <li className="card">
-            <img src="img/cats-3.jpg" width="204" height="144" alt="Котик"/>
-          </li>
-          <li className="card">
-            <img src="img/cats-4.jpg" width="204" height="144" alt="Котик"/>
-          </li>
-          <li className="card card-finished">
-            <img src="img/cats-5.jpg" width="204" height="144" alt="Котик"/>
-          </li>
-          <li className="card card-show">
-            <img src="img/cats-6.jpg" width="204" height="144" alt="Котик"/>
-          </li>
-          <li className="card">
-            <img src="img/cats-6.jpg" width="204" height="144" alt="Котик"/>
-          </li>
-          <li className="card card-finished">
-            <img src="img/cats-5.jpg" width="204" height="144" alt="Котик"/>
-          </li>
-          <li className="card">
-            <img src="img/cats-4.jpg" width="204" height="144" alt="Котик"/>
-          </li>
-          <li className="card">
-            <img src="img/cats-3.jpg" width="204" height="144" alt="Котик"/>
-          </li>
-          <li className="card">
-            <img src="img/cats-2.jpg" width="204" height="144" alt="Котик"/>
-          </li>
-          <li className="card">
-            <img src="img/cats-1.jpg" width="204" height="144" alt="Котик"/>
-          </li>
-        </ul>
-      </section>);
+      return (
+        <section className="game container">
+          <ul className="cards cards-theme-cars">
+            <Card number={1} isShow />
+            <Card number={2} />
+            <Card number={3} />
+            <Card number={4} />
+            <Card number={5} isFinished />
+            <Card number={6} isShow />
+            <Card number={6} />
+            <Card number={5} isFinished/>
+            <Card number={4} />
+            <Card number={3} />
+            <Card number={2} />
+            <Card number={1} />
+          </ul>
+        </section>);
     }
-    // TODO: создайте корневой компонент приложения
-    // TODO: создайте компонент карточки
+
+    function Card({number, isShow = false, isFinished = false}) {
+      const className = `card ${
+        isShow ? 'card-show' : ''
+      } ${
+        isFinished ? 'card-finished' : ''
+      }`;
+
+      return (
+        <li className={className}>
+          <img src={`img/cats-${number}.jpg`} width="204" height="144" alt="Котик" />
+        </li>);
+    }
+
     // TODO: передайте данные в компоненты
   </script>
 </body>
