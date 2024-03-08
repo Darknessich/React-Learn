@@ -19,16 +19,18 @@
     root.render(<App images={images} />);
 
     function App({ images = [] }) {
-      // TODO: добавьте состояние для счётчика шагов
+      const [steps, setSteps] = React.useState(0);
+      const handlerDoStep = () => setSteps((prev) => prev + 1);
+
       return (
         <section className="game container">
-          <div className="steps">Шаг {42}</div>
-          <Grid images={images} />
+          <div className="steps">Шаг {steps}</div>
+          <Grid images={images} doStep={handlerDoStep}/>
         </section>
       );
     }
 
-    function Grid({ images = []}) {
+    function Grid({ images = [], doStep}) {
       const [visibleItems, visibleAdd] = React.useState([]);
       const finishedItems = [];
 
@@ -36,6 +38,7 @@
         if (visibleItems.includes(id) || finishedItems.includes(id))
           return;
 
+        doStep();
         visibleAdd((prev) => [...prev, id])
       }
 
