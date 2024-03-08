@@ -28,30 +28,44 @@
       );
     }
 
-    function Grid({ images = [], visibleItems = [], finishedItems = [] }) {
-      // TODO: добавьте состояние списка открытых карточек
+    function Grid({ images = []}) {
+      const [visibleItems, visibleAdd] = React.useState([]);
+      const finishedItems = [];
+
+      const handleCardClick = (id) => {
+        if (visibleItems.includes(id) || finishedItems.includes(id))
+          return;
+
+        visibleAdd((prev) => [...prev, id])
+      }
+
       return (
         <ul className="cards">
           {images.map((item) => (
             <Card
               key={item.id}
+              id={item.id}
               url={item.url}
               description={item.description}
               isVisible={visibleItems.includes(item.id)}
               isFinished={finishedItems.includes(item.id)}
+              onCardClick={handleCardClick}
             />
           ))}
         </ul>
       );
     }
 
-    function Card({ url, description, isVisible, isFinished }) {
-      // TODO: добавьте обработку события
+    function Card({id, url, description, isVisible, isFinished, onCardClick }) {
+      const handler = () => {
+        onCardClick(id);
+      }
+
       const className = `${isVisible ? 'card-show' : ''
         } ${isFinished ? 'card-finished' : ''
         }`;
       return (
-        <li className={`card ${className}`}>
+        <li className={`card ${className}`} onClick={handler}>
           <img
             width="204" height="144"
             src={url}
