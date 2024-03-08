@@ -13,6 +13,51 @@
   <div id="root">Корневой элемент</div>
   <script type="text/babel">
     const container = document.getElementById('root');
+    const root = ReactDOM.createRoot(container);
+    root.render(<App />)
+
+    function App() {
+      return (<section className="game container">
+        <ul className="cards cards-theme-cars">
+          <li className="card card-show">
+            <img src="img/cats-1.jpg" width="204" height="144" alt="Котик"/>
+          </li>
+          <li className="card">
+            <img src="img/cats-2.jpg" width="204" height="144" alt="Котик"/>
+          </li>
+          <li className="card">
+            <img src="img/cats-3.jpg" width="204" height="144" alt="Котик"/>
+          </li>
+          <li className="card">
+            <img src="img/cats-4.jpg" width="204" height="144" alt="Котик"/>
+          </li>
+          <li className="card card-finished">
+            <img src="img/cats-5.jpg" width="204" height="144" alt="Котик"/>
+          </li>
+          <li className="card card-show">
+            <img src="img/cats-6.jpg" width="204" height="144" alt="Котик"/>
+          </li>
+          <li className="card">
+            <img src="img/cats-6.jpg" width="204" height="144" alt="Котик"/>
+          </li>
+          <li className="card card-finished">
+            <img src="img/cats-5.jpg" width="204" height="144" alt="Котик"/>
+          </li>
+          <li className="card">
+            <img src="img/cats-4.jpg" width="204" height="144" alt="Котик"/>
+          </li>
+          <li className="card">
+            <img src="img/cats-3.jpg" width="204" height="144" alt="Котик"/>
+          </li>
+          <li className="card">
+            <img src="img/cats-2.jpg" width="204" height="144" alt="Котик"/>
+          </li>
+          <li className="card">
+            <img src="img/cats-1.jpg" width="204" height="144" alt="Котик"/>
+          </li>
+        </ul>
+      </section>);
+    }
     // TODO: создайте корневой компонент приложения
     // TODO: создайте компонент карточки
     // TODO: передайте данные в компоненты
