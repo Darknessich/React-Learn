@@ -9,6 +9,7 @@
   <script src="vendor/react-dom.development.js"></script>
   <script src="vendor/babel.min.js"></script>
   <script src="data.js"></script>
+  <script src="settings.js"></script>
 </head>
 
 <body>
@@ -19,28 +20,87 @@
     root.render(<App images={images} />);
 
     function App({ images = [] }) {
-      const [steps, setSteps] = React.useState(0);
-      const handlerDoStep = () => setSteps((prev) => prev + 1);
+      const [finishedItems, setFinishedItems] = React.useState([]);
+      const [stepsCount, setStepsCount] = React.useState(0);
+      
+      const checkItems = (firstId, secondId) => {
+        const firstItem = images.find(({id}) => id === firstId);
+        const secondItem = images.find(({id}) => id === secondId);
+        
+        if (firstItem.url === secondItem.url) {
+          setFinishedItems((prev) => [...prev, firstId, secondId])
+        }
 
+        setStepsCount((i) => i + 1);
+      };
+
+      const handleReset = () => {
+        setFinishedItems([]);
+        setStepsCount(0);
+      }
+
+      const isWin = finishedItems.length === images.length;       
       return (
         <section className="game container">
-          <div className="steps">Шаг {steps}</div>
-          <Grid images={images} doStep={handlerDoStep}/>
+          <Progress value={finishedItems.length / 2} max={images.length / 2}/>
+          <div className="steps">Шаг {stepsCount}</div>
+          <Grid
+            images={images}
+            finishedItems={finishedItems}
+            checkItems={checkItems}
+          />
+          {isWin && (<Modal>
+            <h3 className="modal-caption">Победа!</h3>
+            <p className="modal-description">Вы собрали все пары за {stepsCount} шагов</p>
+            <button onClick={handleReset} className="button modal-button" type="button">Новая игра</button>
+          </Modal>)}
         </section>
       );
     }
 
-    function Grid({ images = [], doStep}) {
-      const [visibleItems, visibleAdd] = React.useState([]);
-      const finishedItems = [];
+    function Modal({children}) {
+      return (
+        <div className="modal">
+          <div className="modal-box">
+            {children}
+          </div>
+        </div>
+      );
+    }
+
+    function Progress({value, max}) {
+      return (
+        <>
+        <div className="progress-wrapper">
+          <div className="progress" style={{width: `${100 * value / max}%`}}></div>
+        </div>
+        <p className="progress-description">Открыто <span>{value}</span> / <span>{max}</span></p>
+        </>
+      );
+    }
+
+    function Grid({ images = [], finishedItems, checkItems }) {
+      const [visibleItems, setVisibleItems] = React.useState([]);
 
       const handleCardClick = (id) => {
-        if (visibleItems.includes(id) || finishedItems.includes(id))
+        if (finishedItems.includes(id) || visibleItems.includes(id)) {
           return;
-
-        doStep();
-        visibleAdd((prev) => [...prev, id])
-      }
+        }
+        switch (visibleItems.length) {
+          case 0:
+          case 2:
+             setVisibleItems([id]); 
+             break;
+          case 1: 
+            setVisibleItems((items) => [...items, id]);
+            checkItems(visibleItems[0], id);
+            setTimeout(() => setVisibleItems([]), TIMEOUT);
+            break;
+          default: 
+            setVisibleItems([]); 
+            break;
+        }
+      };
 
       return (
         <ul className="cards">
@@ -59,16 +119,17 @@
       );
     }
 
-    function Card({id, url, description, isVisible, isFinished, onCardClick }) {
-      const handler = () => {
-        onCardClick(id);
-      }
-
+    function Card({ url, description, id, isVisible, isFinished, onCardClick }) {
       const className = `${isVisible ? 'card-show' : ''
         } ${isFinished ? 'card-finished' : ''
         }`;
+
+      const handleClick = () => {
+        onCardClick(id);
+      };
+
       return (
-        <li className={`card ${className}`} onClick={handler}>
+        <li onClick={handleClick} className={`card ${className}`}>
           <img
             width="204" height="144"
             src={url}
