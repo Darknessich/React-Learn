@@ -50,9 +50,19 @@
         if (finishedItems.includes(id) || visibleItems.includes(id)) {
           return;
         }
-        // TODO: напишите логику выбора пары карточек для сравнения
-        checkItems();
-        setVisibleItems((items) => [...items, id]);
+        switch (visibleItems.length) {
+          case 0:
+          case 2:
+             setVisibleItems([id]); 
+             break;
+          case 1: 
+            setVisibleItems((items) => [...items, id]);
+            checkItems(visibleItems[0], id);
+            break;
+          default: 
+            setVisibleItems([]); 
+            break;
+        }
       };
 
       return (
