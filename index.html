@@ -21,11 +21,18 @@
     root.render(<App images={images} />);
 
     function App({ images = [] }) {
-      const finishedItems = [];
+      const [finishedItems, setFinishedItems] = React.useState([]);
       const [stepsCount, setStepsCount] = React.useState(0);
       // TODO: добавьте состояние для угаданных пар карточек
-      const checkItems = () => {
+      const checkItems = (firstId, secondId) => {
         // TODO: реализуйте сравнение карточек в паре
+        const firstItem = images.find(({id}) => id === firstId);
+        const secondItem = images.find(({id}) => id === secondId);
+        
+        if (firstItem.url === secondItem.url) {
+          setFinishedItems((prev) => [...prev, firstId, secondId])
+        }
+
         setStepsCount((i) => i + 1);
       };
 
