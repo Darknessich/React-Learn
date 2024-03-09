@@ -23,9 +23,7 @@
     function App({ images = [] }) {
       const [finishedItems, setFinishedItems] = React.useState([]);
       const [stepsCount, setStepsCount] = React.useState(0);
-      // TODO: добавьте состояние для угаданных пар карточек
       const checkItems = (firstId, secondId) => {
-        // TODO: реализуйте сравнение карточек в паре
         const firstItem = images.find(({id}) => id === firstId);
         const secondItem = images.find(({id}) => id === secondId);
         
@@ -36,6 +34,7 @@
         setStepsCount((i) => i + 1);
       };
 
+      const isWin = finishedItems.length === images.length;       
       return (
         <section className="game container">
           <Progress value={finishedItems.length} max={images.length}/>
@@ -45,16 +44,33 @@
             finishedItems={finishedItems}
             checkItems={checkItems}
           />
-          {/* TODO% отобразите модальное окно при победе */}
+          {isWin && <Modal>
+            <h3 class="modal-caption">Победа!</h3>
+            <p class="modal-description">Вы собрали все пары за {stepsCount} шагов</p>
+            <button class="button modal-button" type="button">Новая игра</button>
+          </Modal>}
         </section>
+      );
+    }
+
+    function Modal({children}) {
+      return (
+        <div class="modal">
+          <div class="modal-box">
+            {children}
+          </div>
+        </div>
       );
     }
 
     function Progress({value, max}) {
       return (
+        <>
         <div class="progress-wrapper">
           <div class="progress" style={{width: `${100 * value / max}%`}}></div>
         </div>
+        <p class="progress-description">Открыто <span>{value}</span> / <span>{max}</span></p>
+        </>
       );
     }
 
