@@ -38,7 +38,7 @@
 
       return (
         <section className="game container">
-          {/* TODO: отобразите прогресс игры */}
+          <Progress value={finishedItems.length} max={images.length}/>
           <div className="steps">Шаг {stepsCount}</div>
           <Grid
             images={images}
@@ -47,6 +47,14 @@
           />
           {/* TODO% отобразите модальное окно при победе */}
         </section>
+      );
+    }
+
+    function Progress({value, max}) {
+      return (
+        <div class="progress-wrapper">
+          <div class="progress" style={{width: `${100 * value / max}%`}}></div>
+        </div>
       );
     }
 
