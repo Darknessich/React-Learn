@@ -9,7 +9,6 @@
   <script src="vendor/react-dom.development.js"></script>
   <script src="vendor/babel.min.js"></script>
   <script src="data.js"></script>
-  <!-- Файл для настроек приложения -->
   <script src="settings.js"></script>
 </head>
 
@@ -95,7 +94,7 @@
           case 1: 
             setVisibleItems((items) => [...items, id]);
             checkItems(visibleItems[0], id);
-            setTimeout(() => setVisibleItems([]), 1000);
+            setTimeout(() => setVisibleItems([]), TIMEOUT);
             break;
           default: 
             setVisibleItems([]); 
