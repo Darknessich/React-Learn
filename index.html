@@ -9,6 +9,8 @@
   <script src="vendor/react-dom.development.js"></script>
   <script src="vendor/babel.min.js"></script>
   <script src="data.js"></script>
+  <!-- Файл для настроек приложения -->
+  <script src="settings.js"></script>
 </head>
 
 <body>
@@ -19,28 +21,39 @@
     root.render(<App images={images} />);
 
     function App({ images = [] }) {
-      const [steps, setSteps] = React.useState(0);
-      const handlerDoStep = () => setSteps((prev) => prev + 1);
+      const finishedItems = [];
+      const [stepsCount, setStepsCount] = React.useState(0);
+      // TODO: добавьте состояние для угаданных пар карточек
+      const checkItems = () => {
+        // TODO: реализуйте сравнение карточек в паре
+        setStepsCount((i) => i + 1);
+      };
 
       return (
         <section className="game container">
-          <div className="steps">Шаг {steps}</div>
-          <Grid images={images} doStep={handlerDoStep}/>
+          {/* TODO: отобразите прогресс игры */}
+          <div className="steps">Шаг {stepsCount}</div>
+          <Grid
+            images={images}
+            finishedItems={finishedItems}
+            checkItems={checkItems}
+          />
+          {/* TODO% отобразите модальное окно при победе */}
         </section>
       );
     }
 
-    function Grid({ images = [], doStep}) {
-      const [visibleItems, visibleAdd] = React.useState([]);
-      const finishedItems = [];
+    function Grid({ images = [], finishedItems, checkItems }) {
+      const [visibleItems, setVisibleItems] = React.useState([]);
 
       const handleCardClick = (id) => {
-        if (visibleItems.includes(id) || finishedItems.includes(id))
+        if (finishedItems.includes(id) || visibleItems.includes(id)) {
           return;
-
-        doStep();
-        visibleAdd((prev) => [...prev, id])
-      }
+        }
+        // TODO: напишите логику выбора пары карточек для сравнения
+        checkItems();
+        setVisibleItems((items) => [...items, id]);
+      };
 
       return (
         <ul className="cards">
@@ -59,16 +72,17 @@
       );
     }
 
-    function Card({id, url, description, isVisible, isFinished, onCardClick }) {
-      const handler = () => {
-        onCardClick(id);
-      }
-
+    function Card({ url, description, id, isVisible, isFinished, onCardClick }) {
       const className = `${isVisible ? 'card-show' : ''
         } ${isFinished ? 'card-finished' : ''
         }`;
+
+      const handleClick = () => {
+        onCardClick(id);
+      };
+
       return (
-        <li className={`card ${className}`} onClick={handler}>
+        <li onClick={handleClick} className={`card ${className}`}>
           <img
             width="204" height="144"
             src={url}
