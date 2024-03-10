@@ -1,1 +1,1 @@
-const TIMEOUT = 800;
+const TIMEOUT = 900;
