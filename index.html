@@ -8,6 +8,7 @@
   <script src="vendor/react.development.js"></script>
   <script src="vendor/react-dom.development.js"></script>
   <script src="vendor/babel.min.js"></script>
+  <script src="vendor/get-declension.min.umd.js"></script>
   <script src="data.js"></script>
   <script src="settings.js"></script>
 </head>
@@ -17,41 +18,47 @@
   <script type="text/babel">
     const container = document.getElementById('root');
     const root = ReactDOM.createRoot(container);
-    root.render(<App images={images} results={results} />);
+    root.render(<App getImages={getImages} results={results} />);
 
-    function App({ images = [], results = [] }) {
+    function App({ results, getImages}) {
+      const [page, setPage] = React.useState(AppRoute.Initinal);
       const [result, setResult] = React.useState(0);
-      const [page, setPage] = React.useState(AppRoute.Game)
+      const [images, setImages] = React.useState([]);
+      const [theme, setTheme] = React.useState(null)
 
-      const handleReset = () => {
-        setPage(AppRoute.Game);
-      }
-
-      const showResults = (result) => {
-        setResult(result)
+      const showResults = (stepsCount) => {
+        setResult(stepsCount);
         setPage(AppRoute.Results);
+      };
+      const handleReset = () => {
+        setPage(AppRoute.Initinal)
       }
-
+      const handleStart = (type) => {
+        setTheme(type);
+        setImages(getImages(type));
+        setPage(AppRoute.Game);
+      };
       const getPage = (route) => {
-        switch(route) {
+        switch (route) {
           case AppRoute.Game:
-            return (
-              <GamePage 
-                images={images} 
-                onShowResults={showResults}
-              />);
+            return <GamePage images={images} onShowResults={showResults} theme={theme}/>;
           case AppRoute.Results:
             return (
-              <ResultsPage 
-                current={result} 
-                results={results}
+              <ResultsPage
+                stepsCount={result}
                 onResetGame={handleReset}
-              />);
+                results={results}
+              />
+            );
+          case AppRoute.Initinal:
+            return <InitialPage onStartGame={handleStart}/>
+          default:
+            return null;
         }
-      }
-
+      };
       return getPage(page);
     }
+
     const useGame = (images) => {
       const [finishedItems, setFinishedItems] = React.useState([]);
       const [stepsCount, setStepsCount] = React.useState(0);
@@ -75,7 +82,7 @@
       };
     };
 
-    function GamePage({ images = [], onShowResults}) {
+    function GamePage({ images = [], onShowResults, theme}) {
       const {
         finishedItems,
         stepsCount,
@@ -95,6 +102,7 @@
             images={images}
             finishedItems={finishedItems}
             checkItems={checkItems}
+            theme={theme}
           />
           {isWin && (
             <Modal>
@@ -128,7 +136,7 @@
       );
     }
 
-    function Grid({ images = [], finishedItems, checkItems }) {
+    function Grid({ images = [], finishedItems, checkItems, theme }) {
       const [visibleItems, setVisibleItems] = React.useState([]);
 
       const handleCardClick = (id) => {
@@ -153,7 +161,7 @@
       };
 
       return (
-        <ul className="cards">
+        <ul className={`cards cards-theme-${theme}`}>
           {images.map((item) => (
             <Card
               key={item.id}
@@ -188,35 +196,65 @@
       );
     }
 
-    function ResultsPage({results = [], current = 0, onResetGame}) {
+    function ResultsPage({ stepsCount, results, onResetGame }) {
+      const wordsDeclension = getDeclension({
+        count: stepsCount, one: 'шаг', few: 'шага', many: 'шагов'
+      });
+
       return (
-        <section class="result container">
+        <section className="result container">
           <h2>Лучшие результаты:</h2>
-          <p>Вы завершили игру за <b>{current} шагов</b>, так держать!</p>
-          <table class="result-table">
-            <thead>
-              <tr class="result-table-row">
-                <th>Место</th>
-                <th>Имя</th>
-                <th>Шаги</th>
-              </tr>
-            </thead>
-            <tbody>
-              {
-                [...results, {name: 'Ваш результат', stepsCount: current}]
-                  .sort((a, b) => a.stepsCount > b.stepsCount ? 1 : -1)
-                  .map(({name, stepsCount}, index) => (
-                    <tr key={name} class={`result-table-row ${stepsCount === current? 'active' : ''}`}>
-                      <td>{index + 1}</td>
-                      <td>{name}</td>
-                      <td>{stepsCount}</td>
-                    </tr>
-                  ))
-              }
-            </tbody>
-          </table>
+          <p>Вы завершили игру за <b>{wordsDeclension}</b>, так держать!</p>
+          <ResultsTable current={stepsCount} results={results} />
           <p>Хотите попробовать ещё раз?</p>
-          <button onClick={onResetGame} class="button result-button" type="button">Новая игра</button>
+          <button onClick={onResetGame} className="button result-button" type="button">Новая игра</button>
+        </section>
+      );
+    }
+
+    function ResultsTable({ current, results }) {
+      const sortedResults = [...results, { name: 'Ваш результат', stepsCount: current }]
+        .sort((a, b) => a.stepsCount - b.stepsCount);
+      return (
+        <table className="result-table">
+          <thead>
+            <tr className="result-table-row">
+              <th>Место</th>
+              <th>Имя</th>
+              <th>Шаги</th>
+            </tr>
+          </thead>
+          <tbody>
+            {sortedResults.map(({ name, stepsCount }, i) => (
+              <tr key={name} className={`result-table-row ${stepsCount === current ? 'active' : ''}`}>
+                <td>{i + 1}</td>
+                <td>{name}</td>
+                <td>{stepsCount}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      );
+    }
+
+    function InitialPage({onStartGame}) {
+      return (
+        <section className="rules container">
+          <h2>Добро пожаловать!</h2>
+          <p>Memory — игра для тренировки визуальной памяти</p>
+          <div className="rules-panel">
+            <h3>Правила игры</h3>
+            <ul className="rules-list">
+              <li>В наборе есть множество карточек – по две штуки с одним и тем же рисунком.</li>
+              <li>Нужно разложить карточки «рубашкой» вверх на столе, а затем переворачивать по две.</li>
+              <li>Если они совпадают – игрок забирает их и получает ещё один ход.</li>
+            </ul>
+          </div>
+          {
+            GAME_TYPES.map(({type, icon, label}) => (
+              <button key={icon} onClick={() => onStartGame(type)} className={`ico-button ico-button-${icon}`} type="button">{label}</button>
+            ))
+          }
         </section>
       );
     }
