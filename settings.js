@@ -1,1 +1,6 @@
-const TIMEOUT = 800;
+const TIMEOUT = 900;
+
+AppRoute = {
+  Game:    'game',
+  Results: 'results',
+}

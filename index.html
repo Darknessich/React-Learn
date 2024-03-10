@@ -17,65 +17,114 @@
   <script type="text/babel">
     const container = document.getElementById('root');
     const root = ReactDOM.createRoot(container);
-    root.render(<App images={images} />);
+    root.render(<App images={images} results={results} />);
 
-    function App({ images = [] }) {
+    function App({ images = [], results = [] }) {
+      const [result, setResult] = React.useState(0);
+      const [page, setPage] = React.useState(AppRoute.Game)
+
+      const handleReset = () => {
+        setPage(AppRoute.Game);
+      }
+
+      const showResults = (result) => {
+        setResult(result)
+        setPage(AppRoute.Results);
+      }
+
+      const getPage = (route) => {
+        switch(route) {
+          case AppRoute.Game:
+            return (
+              <GamePage 
+                images={images} 
+                onShowResults={showResults}
+              />);
+          case AppRoute.Results:
+            return (
+              <ResultsPage 
+                current={result} 
+                results={results}
+                onResetGame={handleReset}
+              />);
+        }
+      }
+
+      return getPage(page);
+    }
+    const useGame = (images) => {
       const [finishedItems, setFinishedItems] = React.useState([]);
       const [stepsCount, setStepsCount] = React.useState(0);
-      
-      const checkItems = (firstId, secondId) => {
-        const firstItem = images.find(({id}) => id === firstId);
-        const secondItem = images.find(({id}) => id === secondId);
-        
-        if (firstItem.url === secondItem.url) {
-          setFinishedItems((prev) => [...prev, firstId, secondId])
-        }
 
+      const checkItems = (firstItem, secondItem) => {
+        const firstImage = images.find(({ id }) => id === firstItem);
+        const secondImage = images.find(({ id }) => id === secondItem);
+        if (firstImage.url === secondImage.url) {
+          setFinishedItems((items) => [...items, firstItem, secondItem]);
+        }
         setStepsCount((i) => i + 1);
       };
 
-      const handleReset = () => {
-        setFinishedItems([]);
-        setStepsCount(0);
-      }
+      const isWin = finishedItems.length > 0 && finishedItems.length === images.length;
 
-      const isWin = finishedItems.length === images.length;       
+      return {
+        finishedItems,
+        stepsCount,
+        checkItems,
+        isWin
+      };
+    };
+
+    function GamePage({ images = [], onShowResults}) {
+      const {
+        finishedItems,
+        stepsCount,
+        checkItems,
+        isWin
+      } = useGame(images);
+
+      const handleResultsClick = () => {
+        onShowResults(stepsCount);
+      };
+
       return (
         <section className="game container">
-          <Progress value={finishedItems.length / 2} max={images.length / 2}/>
+          <Progress value={finishedItems.length / 2} max={images.length / 2} />
           <div className="steps">Шаг {stepsCount}</div>
           <Grid
             images={images}
             finishedItems={finishedItems}
             checkItems={checkItems}
           />
-          {isWin && (<Modal>
-            <h3 className="modal-caption">Победа!</h3>
-            <p className="modal-description">Вы собрали все пары за {stepsCount} шагов</p>
-            <button onClick={handleReset} className="button modal-button" type="button">Новая игра</button>
-          </Modal>)}
+          {isWin && (
+            <Modal>
+              <h3 className="modal-caption">Победа!</h3>
+              <p className="modal-description">Теперь давайте узнаем результаты этой партии</p>
+              <button className="button modal-button" type="button" onClick={handleResultsClick}>Показать результаты</button>
+            </Modal>
+          )}
         </section>
       );
     }
 
-    function Modal({children}) {
+    function Progress({ value, max }) {
+      return (
+        <>
+          <div className="progress-wrapper">
+            <div className="progress" style={{ width: `${value / max * 100}%` }}></div>
+          </div>
+          <p className="progress-description">Открыто {value} / {max}</p>
+        </>
+      );
+    }
+
+    function Modal({ children }) {
       return (
         <div className="modal">
           <div className="modal-box">
             {children}
           </div>
         </div>
-      );
-    }
-
-    function Progress({value, max}) {
-      return (
-        <>
-        <div className="progress-wrapper">
-          <div className="progress" style={{width: `${100 * value / max}%`}}></div>
-        </div>
-        <p className="progress-description">Открыто <span>{value}</span> / <span>{max}</span></p>
-        </>
       );
     }
 
@@ -86,18 +135,20 @@
         if (finishedItems.includes(id) || visibleItems.includes(id)) {
           return;
         }
+
         switch (visibleItems.length) {
           case 0:
-             setVisibleItems([id]); 
-             break;
-          case 1: 
+            setVisibleItems([id]);
+            break;
+          case 1:
             setVisibleItems((items) => [...items, id]);
             checkItems(visibleItems[0], id);
-            setTimeout(() => setVisibleItems([]), TIMEOUT);
+            setTimeout(() => {
+              setVisibleItems([]);
+            }, TIMEOUT);
             break;
-          default: 
-            setVisibleItems([]); 
-            break;
+          default:
+            setVisibleItems([]);
         }
       };
 
@@ -106,9 +157,7 @@
           {images.map((item) => (
             <Card
               key={item.id}
-              id={item.id}
-              url={item.url}
-              description={item.description}
+              item={item}
               isVisible={visibleItems.includes(item.id)}
               isFinished={finishedItems.includes(item.id)}
               onCardClick={handleCardClick}
@@ -118,7 +167,8 @@
       );
     }
 
-    function Card({ url, description, id, isVisible, isFinished, onCardClick }) {
+    function Card({ item, isVisible, isFinished, onCardClick }) {
+      const { id, url, description } = item;
       const className = `${isVisible ? 'card-show' : ''
         } ${isFinished ? 'card-finished' : ''
         }`;
@@ -135,6 +185,39 @@
             alt={description}
           />
         </li>
+      );
+    }
+
+    function ResultsPage({results = [], current = 0, onResetGame}) {
+      return (
+        <section class="result container">
+          <h2>Лучшие результаты:</h2>
+          <p>Вы завершили игру за <b>{current} шагов</b>, так держать!</p>
+          <table class="result-table">
+            <thead>
+              <tr class="result-table-row">
+                <th>Место</th>
+                <th>Имя</th>
+                <th>Шаги</th>
+              </tr>
+            </thead>
+            <tbody>
+              {
+                [...results, {name: 'Ваш результат', stepsCount: current}]
+                  .sort((a, b) => a.stepsCount > b.stepsCount ? 1 : -1)
+                  .map(({name, stepsCount}, index) => (
+                    <tr key={name} class={`result-table-row ${stepsCount === current? 'active' : ''}`}>
+                      <td>{index + 1}</td>
+                      <td>{name}</td>
+                      <td>{stepsCount}</td>
+                    </tr>
+                  ))
+              }
+            </tbody>
+          </table>
+          <p>Хотите попробовать ещё раз?</p>
+          <button onClick={onResetGame} class="button result-button" type="button">Новая игра</button>
+        </section>
       );
     }
   </script>
