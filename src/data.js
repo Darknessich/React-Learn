@@ -1,3 +1,5 @@
+import {RANDOMIZED} from "./settings.js"
+
 const cats = [{
   'id': 'YdAqiUkUoWA',
   'url': 'img/cats-1.jpg',
@@ -87,15 +89,9 @@ const results = [
 ];
 
 const getImages = (type) => {
-  images = [];
-  for (const image of imageCollection[type]) {
-    images.push({...image, id: `${image.id}-1`});
-    images.push({...image});
-  }
-
-  for (let i = 0; i < images.length && RANDOMIZED; ++i) {
-    j = Math.floor(Math.random() * images.length);
-    [images[i], images[j]] = [images[j], images[i]];
-  }
-  return images;
+  const imagesPairs = imageCollection[type].map((item) => ({...item, id: `${item.id}-1`}));
+  const imagesMerge = [...imageCollection[type], ...imagesPairs];
+  return RANDOMIZED? imagesMerge.sort(() => Math.random() - 0.5) : imagesMerge;
 };
+
+export {results, getImages};
