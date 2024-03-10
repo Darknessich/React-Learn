@@ -87,7 +87,15 @@ const results = [
 ];
 
 const getImages = (type) => {
-  // TODO: напишите код для формирования тематического набора данных
-  // TODO: напишите код для перемешивания данных
-  return [];
+  images = [];
+  for (const image of imageCollection[type]) {
+    images.push({...image, id: `${image.id}-1`});
+    images.push({...image});
+  }
+
+  for (let i = 0; i < images.length && RANDOMIZED; ++i) {
+    j = Math.floor(Math.random() * images.length);
+    [images[i], images[j]] = [images[j], images[i]];
+  }
+  return images;
 };
