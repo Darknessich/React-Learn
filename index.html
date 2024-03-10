@@ -8,6 +8,7 @@
   <script src="vendor/react.development.js"></script>
   <script src="vendor/react-dom.development.js"></script>
   <script src="vendor/babel.min.js"></script>
+  <script src="vendor/get-declension.min.umd.js"></script>
   <script src="data.js"></script>
   <script src="settings.js"></script>
 </head>
@@ -17,41 +18,39 @@
   <script type="text/babel">
     const container = document.getElementById('root');
     const root = ReactDOM.createRoot(container);
-    root.render(<App images={images} results={results} />);
+    root.render(<App getImages={getImages} results={results} />);
 
-    function App({ images = [], results = [] }) {
+    function App({ results, getImages, images = getImages() }) {
+      const [page, setPage] = React.useState(AppRoute.Game);
       const [result, setResult] = React.useState(0);
-      const [page, setPage] = React.useState(AppRoute.Game)
+      // TODO: добавьте состояние текущего набора карточек
 
+      const showResults = (stepsCount) => {
+        setResult(stepsCount);
+        setPage(AppRoute.Results);
+      };
       const handleReset = () => {
         setPage(AppRoute.Game);
-      }
-
-      const showResults = (result) => {
-        setResult(result)
-        setPage(AppRoute.Results);
-      }
-
+      };
       const getPage = (route) => {
-        switch(route) {
+        switch (route) {
           case AppRoute.Game:
-            return (
-              <GamePage 
-                images={images} 
-                onShowResults={showResults}
-              />);
+            return <GamePage images={images} onShowResults={showResults} />;
           case AppRoute.Results:
             return (
-              <ResultsPage 
-                current={result} 
-                results={results}
+              <ResultsPage
+                stepsCount={result}
                 onResetGame={handleReset}
-              />);
+                results={results}
+              />
+            );
+          default:
+            return null;
         }
-      }
-
+      };
       return getPage(page);
     }
+
     const useGame = (images) => {
       const [finishedItems, setFinishedItems] = React.useState([]);
       const [stepsCount, setStepsCount] = React.useState(0);
@@ -75,7 +74,7 @@
       };
     };
 
-    function GamePage({ images = [], onShowResults}) {
+    function GamePage({ images = [], onShowResults }) {
       const {
         finishedItems,
         stepsCount,
@@ -153,6 +152,7 @@
       };
 
       return (
+        // TODO: добавьте класс списку для смены рубашки карточек
         <ul className="cards">
           {images.map((item) => (
             <Card
@@ -188,35 +188,48 @@
       );
     }
 
-    function ResultsPage({results = [], current = 0, onResetGame}) {
+    function ResultsPage({ stepsCount, results, onResetGame }) {
+      // TODO: примените getDeclension для правильного склонения числа шагов
       return (
-        <section class="result container">
+        <section className="result container">
           <h2>Лучшие результаты:</h2>
-          <p>Вы завершили игру за <b>{current} шагов</b>, так держать!</p>
-          <table class="result-table">
-            <thead>
-              <tr class="result-table-row">
-                <th>Место</th>
-                <th>Имя</th>
-                <th>Шаги</th>
-              </tr>
-            </thead>
-            <tbody>
-              {
-                [...results, {name: 'Ваш результат', stepsCount: current}]
-                  .sort((a, b) => a.stepsCount > b.stepsCount ? 1 : -1)
-                  .map(({name, stepsCount}, index) => (
-                    <tr key={name} class={`result-table-row ${stepsCount === current? 'active' : ''}`}>
-                      <td>{index + 1}</td>
-                      <td>{name}</td>
-                      <td>{stepsCount}</td>
-                    </tr>
-                  ))
-              }
-            </tbody>
-          </table>
+          <p>Вы завершили игру за <b>{stepsCount} шагов</b>, так держать!</p>
+          <ResultsTable current={stepsCount} results={results} />
           <p>Хотите попробовать ещё раз?</p>
-          <button onClick={onResetGame} class="button result-button" type="button">Новая игра</button>
+          <button onClick={onResetGame} className="button result-button" type="button">Новая игра</button>
+        </section>
+      );
+    }
+
+    function ResultsTable({ current, results }) {
+      const sortedResults = [...results, { name: 'Ваш результат', stepsCount: current }]
+        .sort((a, b) => a.stepsCount - b.stepsCount);
+      return (
+        <table className="result-table">
+          <thead>
+            <tr className="result-table-row">
+              <th>Место</th>
+              <th>Имя</th>
+              <th>Шаги</th>
+            </tr>
+          </thead>
+          <tbody>
+            {sortedResults.map(({ name, stepsCount }, i) => (
+              <tr key={name} className={`result-table-row ${stepsCount === current ? 'active' : ''}`}>
+                <td>{i + 1}</td>
+                <td>{name}</td>
+                <td>{stepsCount}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      );
+    }
+
+    function InitialPage() {
+      return (
+        <section className="rules container">
+          {/* TODO: отрисуйте начальную страницу из шаблона */}
         </section>
       );
     }
