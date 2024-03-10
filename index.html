@@ -20,13 +20,37 @@
     root.render(<App images={images} results={results} />);
 
     function App({ images = [], results = [] }) {
-      // TODO: добавьте состояние для хранения текущего результата
-      // TODO: добавьте состояние для хранения страницы приложения
-      // TODO: добавьте логику переключения страницы приложения
+      const [result, setResult] = React.useState(0);
+      const [page, setPage] = React.useState(AppRoute.Game)
 
-      return (
-        <GamePage images={images} />
-      );
+      const handleReset = () => {
+        setPage(AppRoute.Game);
+      }
+
+      const showResults = (result) => {
+        setResult(result)
+        setPage(AppRoute.Results);
+      }
+
+      const getPage = (route) => {
+        switch(route) {
+          case AppRoute.Game:
+            return (
+              <GamePage 
+                images={images} 
+                onShowResults={showResults}
+              />);
+          case AppRoute.Results:
+            return (
+              <ResultsPage 
+                current={result} 
+                results={results}
+                onResetGame={handleReset}
+              />);
+        }
+      }
+
+      return getPage(page);
     }
     const useGame = (images) => {
       const [finishedItems, setFinishedItems] = React.useState([]);
@@ -51,7 +75,7 @@
       };
     };
 
-    function GamePage({ images = [] }) {
+    function GamePage({ images = [], onShowResults}) {
       const {
         finishedItems,
         stepsCount,
@@ -60,7 +84,7 @@
       } = useGame(images);
 
       const handleResultsClick = () => {
-        // TODO: передайте сообщение родительскому компоненту
+        onShowResults(stepsCount);
       };
 
       return (
@@ -164,10 +188,35 @@
       );
     }
 
-    function ResultsPage() {
+    function ResultsPage({results = [], current = 0, onResetGame}) {
       return (
-        <section className="result container">
-          {/* TODO: отрисуйте страницу результата из шаблона */}
+        <section class="result container">
+          <h2>Лучшие результаты:</h2>
+          <p>Вы завершили игру за <b>{current} шагов</b>, так держать!</p>
+          <table class="result-table">
+            <thead>
+              <tr class="result-table-row">
+                <th>Место</th>
+                <th>Имя</th>
+                <th>Шаги</th>
+              </tr>
+            </thead>
+            <tbody>
+              {
+                [...results, {name: 'Ваш результат', stepsCount: current}]
+                  .sort((a, b) => a.stepsCount > b.stepsCount ? 1 : -1)
+                  .map(({name, stepsCount}, index) => (
+                    <tr key={name} class={`result-table-row ${stepsCount === current? 'active' : ''}`}>
+                      <td>{index + 1}</td>
+                      <td>{name}</td>
+                      <td>{stepsCount}</td>
+                    </tr>
+                  ))
+              }
+            </tbody>
+          </table>
+          <p>Хотите попробовать ещё раз?</p>
+          <button onClick={onResetGame} class="button result-button" type="button">Новая игра</button>
         </section>
       );
     }
